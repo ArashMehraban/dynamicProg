@@ -83,12 +83,36 @@ def isSumPossible(l,s):
             if j < l[i-1]:
                 dp[i][j] = dp[i-1][j]
             if j >= l[i-1]:
-                dp[i][j] = (dp[i-1][j] or dp[i-1][j - l[i-1]])          
- 
+                dp[i][j] = (dp[i-1][j] or dp[i-1][j - l[i-1]])
+                
     return dp[len(l)][s]
+
+# DP problem (Partition equal subset sums):
+# For  given list of integer values, l, and a given sum, s, can we partition l into two
+# subsets that have equal sum of values?
+#
+# Note 1: This is Knapsack problem 0/1 type problem.
+# Note 2: This is in essense the isSumPossible() function with extra simple constrains:
+#         Constrains:
+#            1) If the sum(l) == Odd then the answer is false since sum/2 won't be integer
+#            2) Given the array find its summation and use summation/2
+#
+#
+def equalSubsetSum(l):
+    s = sum(l)
+    if s & 1:  # <--- sum(l) == Odd 
+        return False
+    else:
+        return isSumPossible(l,s//2)
 
 if __name__ == "__main__":
     l=[3,34,4,12,5,2]
     s = 9
     print(isSumPossible(l,s))
     #True
+    print('-----------------')
+    l = [12,5,7,4,4]
+    print(equalSubsetSum(l))
+    #True
+    
+
