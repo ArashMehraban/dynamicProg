@@ -105,6 +105,39 @@ def equalSubsetSum(l):
     else:
         return isSumPossible(l,s//2)
 
+# DP problem (count the number of subsets that sum to s in given list l)
+# Note: This problem is the same as isSumPossible() problem (so read its logic first)
+#        Small changes in that problem gives this:
+#        1) Fill the dp table with 0 for False and 1 for True
+#        2) In the recurvsive call:
+#   if s > l[n-1]:  <-- if l[n-1] < s, either exclude it OR include it
+#       return isSum(l,n-1,s) || isSum(l,n-1,s-l[n-1])
+#                (exclude it)         (inlude it)
+#
+#       we want to use + instead of ||. Why? becasue we want the number of
+#       subsets in all conditions, when we include an item or exlude it. So:
+#
+def countSubsets(l,s):
+    #Allocate a (len(l)+1)-by-(s+1) list of None's
+    dp = [[None]*(s+1) for _ in range(len(l)+1)]
+    #dp = [[None for x in range(s + 1)] for x in range(len(l) + 1)]
+    # Populate the zeroth col with 1
+    for i in range(len(l)+1):
+        dp[i][0] = 1
+    #Populate the zeroth row (except the zeroth elem in that row) with 0 
+    for i in range(1,s+1):
+        dp[0][i] = 0
+    # for every i and j (number of elem and s) apply the recursive function above
+    for i in range(1,len(l)+1):
+        for j in range(1,s+1):
+            if j < l[i-1]:
+                dp[i][j] = dp[i-1][j]
+            if j >= l[i-1]:
+                dp[i][j] = (dp[i-1][j] + dp[i-1][j - l[i-1]])
+                
+    return dp[len(l)][s]
+
+
 if __name__ == "__main__":
     l=[3,34,4,12,5,2]
     s = 9
@@ -114,5 +147,8 @@ if __name__ == "__main__":
     l = [12,5,7,4,4]
     print(equalSubsetSum(l))
     #True
+    print('-----------------')
+    print(countSubsets(l,12))
+    #2
     
 
