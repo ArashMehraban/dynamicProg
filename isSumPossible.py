@@ -84,7 +84,7 @@ def isSumPossible(l,s):
                 dp[i][j] = dp[i-1][j]
             if j >= l[i-1]:
                 dp[i][j] = (dp[i-1][j] or dp[i-1][j - l[i-1]])
-                
+
     return dp[len(l)][s]
 
 # DP problem (Partition equal subset sums):
@@ -138,6 +138,88 @@ def countSubsets(l,s):
     return dp[len(l)][s]
 
 
+# DP Problem (Minimum Subset Sum difference)
+# Given an array l, partition l into two subsets such that the difference of the
+# sums of each subset is minimum?
+#
+# Note: This is a Knapsack 0/1 type problem. It is a variaion of equalSubsetSum()
+#       and isSumPossible() problems. equalSubsetSum() is the best case senario where
+#       diff = 0. 
+#       Things to consider:
+#       1) s1 = sum(elems in subset 1)
+#          s2 = sum(elems in subset 2)
+#       2) if an elem is used in coputation of s1, then it is not used in s2, so:
+#
+#                 s1                     sum-s1 = s2
+#          |-------------------------|-----------------|
+#          <--------------------sum-------------------->
+#
+#        So, diff = abs((sum -s1) -s1) = sum - 2*s1
+#        Therefore, we need to minimize sum - 2*s1 then.
+#        So, imagine s1 <= s1. We ask under what condition s1 = s2? Ans: When
+#        s2 (and s1) is equal to sum/2 (logic of equalSubsetSum() function):
+#        Therefore: s1 < sum/2 and
+#
+#          0              sum/2           sum
+#          |---------------------|---------------------|
+#                        s1<------
+#
+#          so if we can find the best value for s1 and minimize diff = sum 2*s1,
+#          we have the answer. Note that some values of sum may not be acheivable
+#          and will be skipped.
+#          So find all the poissible values of subset sum. That comes from the
+#          logic of isSumPossible() problem.
+#          That yields table below. Flase ones are the sums that cannot be made
+#
+#           j = 0       1         2     ...      s
+#             ________________________________________
+# i = #elems 0|_True_|_False_|_False_|_False_|_False_|
+#            1|_True_|_______|_______|_______|_______|
+#            2|_True_|___..__|__..___|__..___|__..___|
+#            .|_True_|___..__|__..___|__..___|__..___|
+#            .|_True_|_False_|_True__|_False_|_True__|
+#
+#          In the table above we are only interested in the last row becase
+#          the last row values indicate all elements of array l are used.
+#          In addition, we iterate through the last row (dp[len(l)][:]) up to sum/2.
+#          (for i = 0 to sum/2 (not sum because we assumed s1 <= s2 = sum/2))
+#          I) initialize: diff = sys.maxsize (python 3) or sys.maxint (python 2) 
+#          II) While iteratating through the last row; 
+#              first  <--- i     (which is s1)
+#              second <--- sum-i (which is s2)
+#          III) if dp[len(l)][i] is True (i,e that sum is possible to form)
+#                    and
+#                  diff > abs(first - second)
+#               then (update minimum possible difference)
+#                   diff = abd(first - second)
+#
+def MinSumDiff(l):
+    s = sum(l)
+    #Allocate a (len(l)+1)-by-(s+1) list of None's
+    dp = [[None]*(s+1) for _ in range(len(l)+1)]
+    # Populate the zeroth col with True
+    for i in range(len(l)+1):
+        dp[i][0] = True
+    #Populate the zeroth row (except the zeroth elem in that row) with False 
+    for i in range(1,s+1):
+        dp[0][i] = False
+    # for every i and j (number of elem and s) apply the recursive function above
+    for i in range(1,len(l)+1):
+        for j in range(1,s+1):
+            if j < l[i-1]:
+                dp[i][j] = dp[i-1][j]
+            if j >= l[i-1]:
+                dp[i][j] = (dp[i-1][j] or dp[i-1][j - l[i-1]])
+    import sys
+    diff = sys.maxsize
+    for i in range(s//2+1):
+        first = i
+        second = s - i
+        if dp[len(l)][i] == True and diff > abs(first - second):
+            diff = abs(first - second)
+    return diff
+
+
 if __name__ == "__main__":
     l=[3,34,4,12,5,2]
     s = 9
@@ -150,5 +232,10 @@ if __name__ == "__main__":
     print('-----------------')
     print(countSubsets(l,12))
     #2
+    l = [12,5,7,4,4,1]
+    print('-----------------')
+    print(MinSumDiff(l))
+    #1
+    
     
 
