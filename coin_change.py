@@ -109,7 +109,84 @@ def coin_change(coins,amount):
     if mem[-1][-1] == float('inf'):
         return -1
     else:
-        return mem[-1][-1] 
+        return mem[-1][-1]
+
+
+# Coin change problem2 (All possible unique ways for coin change problem above):
+# You are given a target amount and infinite bag of coins with different
+# denominations. How many unique ways can you make the target amount:
+# e.g. [1,2], taget amount = 4
+# Note: [2,1,1] and [1,2,1] are not considered different 
+# ([1,1,1,1], [2,1,1], [2,2]) --> 3 ways.
+#Solution:
+# Following the logic of coion change problem above, we create a table of 
+# coins and amounts (mem[coins+1][amount+1]). However, the cells in teh table contain the NUMBER of
+# WAYS a certain amount can be made with the coins. Therefore,  
+# 1) The first column will be all ones because, you can make 0 amount 1 way
+#     by not including any coins for any amount.
+# 2) The first row except for the zeroth element, there is 0 way to make
+#    any amount when 0 coins are available
+#
+#                                  amounts (j)
+#             ____0_______1______2_______3________4_____ 5_____
+#    (i)    0 |___1___|___0___|___0___|___0___|___0___|___0___|
+#   coins   1 |___1___|_______|_______|_______|_______|_______|
+#           2 |___1___|_______|_______|_______|_______|_______|
+#           3 |___1___|_______|_______|_______|_______|_______|
+#
+#
+# Now for each internal cell in the mem[][] table, we notice that to make an
+# amount we either need to exclude a coin denomination or include it and reduce
+# the amount to be made for the next step by the value of the coin included.
+# consider:
+# c: coin, a: amount
+# men[c][a]
+# mem[1][1] = number-of-way-if-include-coin-c + number-of-way-if-exclude-coin-c
+# mem[1][1] =       1 (from mem[1][0])        +        0 (from meme[0][1])
+# mem[1][2] =       1 (from mem[1][1])        +        0 (from meme[0][2])
+# mem[1][3] =       1 (from mem[1][2])        +        0 (from meme[0][3])
+# mem[1][4] =       1 (from mem[1][3])        +        0 (from meme[0][4])
+# mem[1][5] =       1 (from mem[1][4])        +        0 (from meme[0][5]) 
+#
+# mem[2][1] = 1 (from mem[1][1]) because you cannot make 1 cent with 2-cent coins
+# mem[2][2] =       1 (from mem[2][0])        +        1 (from meme[1][2])
+#     i  j                         |
+#            j = 2(amount) - 2(included denom 2)
+# so:
+#
+#                                   amounts (j)
+#             (i) ____0_______1______2_______3________4_____ 5____
+# coin type    0 |___1___|___0___|___0___|___0___|___0___|___0___|
+#                |       |   \   |       |       |       |       |
+#     1 cent   1 |___1_<------1__|___1___|___1___|___1___|___1___|
+#                |       |       |       |       |       |       |
+#     2 cent   2 |___1___|___ 1__|___  2_|___2___|___2___|___3___|
+#                |    <----------------| |       |       |    \  |   
+#     5 cent   3 |___1___|___2___|____2__|___2___|___3___|___  4_|
+#                    <-----------------------------------------|
+#So:
+#
+def coin_change_2_all_ways(coins, amount):
+    #Allocate [len(coins)+1][amount+1] memoization table
+    mem = [[None]*(amount+1) for _ in range(len(coins)+1)]
+    # Populate first row (except zeroth elem) with no coins and amount > 0
+    for i in range(1,amount +1):
+        mem[0][i] = 0
+
+    for i in range(len(coins)+1):
+        mem[i][0] = 1
+
+    print(mem)
+
+    for i in range(1, len(coins)+1):
+        for j in range(1,amount+1):
+            if j >= coins[i-1]: #include add
+                mem[i][j] = mem[i][j - coins[i-1]] + mem[i-1][j]
+            else: #or exclude
+                mem[i][j] = mem[i-1][j]
+    print(mem)
+    return mem[-1][-1]    
+
     
 if __name__ == "__main__":
     coins=[1,2,5]
@@ -121,3 +198,7 @@ if __name__ == "__main__":
     coins=[5,10]
     amount = 6
     print(coin_change(coins,amount)) # -1
+    print('--------------------------------')
+    coins=[1,2,5]
+    amount = 5
+    print(coin_change_2_all_ways(coins, amount)) #4
